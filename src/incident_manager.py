@@ -2,6 +2,7 @@
 Incident Manager - Search and retrieve incidents from YAML files
 """
 import os
+import re
 import yaml
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -89,6 +90,91 @@ class IncidentManager:
                 continue
         
         return results
+
+    def _normalize_text(self, value: str) -> str:
+        """Normalize text for flexible incident lookups."""
+        return re.sub(r"[^a-z0-9]", "", value.lower())
+
+    def _tokenize_text(self, value: str) -> List[str]:
+        """Split text into normalized tokens for shorthand matching."""
+        tokens = re.findall(r"[a-z0-9]+", value.lower())
+        return [token[:-1] if len(token) > 3 and token.endswith("s") else token for token in tokens]
+
+    def _matches_token_prefix(self, candidate: str, query: str) -> bool:
+        """Check whether a candidate starts with the query token sequence."""
+        candidate_tokens = self._tokenize_text(candidate)
+        query_tokens = self._tokenize_text(query)
+
+        if not candidate_tokens or not query_tokens or len(query_tokens) > len(candidate_tokens):
+            return False
+
+        return candidate_tokens[: len(query_tokens)] == query_tokens
+
+    def resolve_incident(self, incident_id_or_query: str) -> Optional[Dict]:
+        """Resolve an incident by exact ID, normalized prefix, or name shorthand."""
+        if not incident_id_or_query:
+            return None
+
+        exact_match = self.get_incident(incident_id_or_query)
+        if exact_match:
+            return exact_match
+
+        normalized_query = self._normalize_text(incident_id_or_query)
+        if not normalized_query:
+            return None
+
+        exact_candidates = []
+        prefix_candidates = []
+        shorthand_candidates = []
+
+        for incident_id, incident in self.incidents.items():
+            candidate_values = [
+                incident_id,
+                incident.get("name", ""),
+                incident.get("description", ""),
+            ]
+            candidate_values.extend(incident.get("aliases", []))
+
+            normalized_candidates = [
+                self._normalize_text(value)
+                for value in candidate_values
+                if value
+            ]
+
+            if normalized_query in normalized_candidates:
+                exact_candidates.append(incident)
+                continue
+
+            if any(candidate.startswith(normalized_query) or normalized_query in candidate for candidate in normalized_candidates):
+                prefix_candidates.append(incident)
+                continue
+
+            if any(
+                self._matches_token_prefix(candidate, incident_id_or_query)
+                for candidate in candidate_values
+                if candidate
+            ):
+                shorthand_candidates.append(incident)
+
+        if len(exact_candidates) == 1:
+            return exact_candidates[0]
+
+        if len(prefix_candidates) == 1:
+            return prefix_candidates[0]
+
+        if len(shorthand_candidates) == 1:
+            return shorthand_candidates[0]
+
+        if len(exact_candidates) > 1:
+            return exact_candidates[0]
+
+        if len(prefix_candidates) > 1:
+            return prefix_candidates[0]
+
+        if len(shorthand_candidates) > 1:
+            return shorthand_candidates[0]
+
+        return None
     
     def get_incident(self, incident_id: str) -> Optional[Dict]:
         """Get specific incident by ID."""

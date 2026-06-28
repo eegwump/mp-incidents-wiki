@@ -1,0 +1,59 @@
+---
+name: "High latency on WebTransaction/SpringController/api/v1/terminals/search-withdrawal-transaction (GET)"
+id: "high-latency-on-webtransaction-springcontroller-api-v1-terminals-search-withdrawal-transaction-get"
+priority: "P2"
+severity: "high"
+description: "High latency on the search-withdrawal-transaction endpoint caused by a slow query connecting to the clickhouse instance 3 db on moniepoint-withdrawal-service-v2"
+aliases:
+  - "high latency search withdrawal transaction"
+  - "search withdrawal transaction slow"
+  - "withdrawal transaction endpoint high latency"
+  - "clickhouse instance 3 slow query"
+
+triggers:
+  - "high-latency-on-webtransaction/springcontroller/api/v1/terminals/search-withdrawal-transaction(GET)"
+  - "High response time on search-withdrawal-transaction endpoint"
+
+known_cause: "Slow query on moniepoint-withdrawal-service-v2 connecting to clickhouse instance 3 db"
+service_name: "moniepoint-withdrawal-service-v2"
+
+troubleshooting:
+  - step: "Open New Relic and find the service"
+    description: "Search for moniepoint-withdrawal-service-v2 in New Relic"
+  - step: "Open the Transactions panel"
+    description: "Click on the Transactions panel in the left sidebar of the service page"
+  - step: "Review transaction summary"
+    description: "Review the transaction summary and identify the query with the highest response time, this is the slow query causing the latency"
+  - step: "Confirm root cause"
+    description: "Confirm this is the search-withdrawal-transaction endpoint and the slow query is connecting to clickhouse instance 3 db"
+  - step: "Track query optimisation work"
+    description: "Current steps are being taken to optimise the queries that run on moniepoint-withdrawal-service-v2 to improve performance, check if a fix is already in progress"
+
+runbook: |
+  - [ ] Confirm incident is high-latency-on-webtransaction/springcontroller/api/v1/terminals/search-withdrawal-transaction(GET)
+  - [ ] Open New Relic and search for the service moniepoint-withdrawal-service-v2
+  - [ ] Click on the Transactions panel in the left sidebar
+  - [ ] Review the transaction summary page
+    - Identify the transaction with the highest response time
+    - This will show the slow query as the highest response time transaction
+  - [ ] Confirm the slow query is connecting to clickhouse instance 3 db
+  - [ ] Check if a query optimisation fix is already in progress for moniepoint-withdrawal-service-v2
+  - [ ] If no fix is in progress escalate to the service owners for query optimisation
+  - [ ] Monitor response times in New Relic after any fix is deployed and confirm latency returns to normal
+
+escalation:
+  level_1: "Escalate to service owners for moniepoint-withdrawal-service-v2 to prioritise query optimisation"
+  note: "Current steps are being taken to optimise queries on moniepoint-withdrawal-service-v2 to improve performance"
+
+slack_notification: true
+notify_channels:
+  - "#card-payment-technical-support"
+  - "#tech-ops"
+
+email_notification: true
+email_recipients:
+  - "oncall@example.com"
+  - "payments@example.com"
+
+resolution_time_sla: 60
+impact: "High latency on the withdrawal transaction search endpoint degrades terminal operator experience when looking up transactions"

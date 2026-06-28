@@ -1,0 +1,66 @@
+---
+name: "Last record on withdrawal transaction table on kafka sink db is older than 5 mins"
+id: "last-record-on-withdrawal_transaction-table-on-kafka-sink-db-is-older-than-5-mins"
+priority: "P2"
+severity: "high"
+description: "Last records on kafka sink withdrawal_transactions are older than 5 mins and may indicate replication lag or service failure"
+aliases:
+  - "withdrawal transaction kafka sink older than 5 mins"
+  - "withdrawal_transactions replication lag"
+  - "kafka sink stale withdrawal transactions"
+
+triggers:
+  - "last-record-on-withdrawal_transaction-table-on-kafka-sink-db-is-older-than-5-mins"
+  - "Withdrawal transaction table on kafka sink db is stale"
+
+troubleshooting:
+  - step: "Check latest transactions on main db"
+    description: "Query main db for the last 5 transactions and confirm they are within the last minute"
+  - step: "Check latest transactions on kafka-moniepoint-live"
+    command: "select * from withdrawal_transactions order by created_on desc limit 5"
+    description: "Run on kafka-moniepoint-live and verify if records are recent"
+  - step: "Replication branch"
+    description: "If kafka sink records are not recent but main db has recent transactions escalate as replication issue"
+  - step: "Service issue branch"
+    description: "If main db records are also not recent treat as service issue and proceed as major incident"
+  - step: "Check Sherlock logs"
+    description: "Check moniepoint-withdrawal-service-transactions logs for recent notification and synchronization requests and look for errors"
+
+runbook: |
+  - [ ] Confirm incident last-record-on-withdrawal_transaction-table-on-kafka-sink-db-is-older-than-5-mins
+  - [ ] Query main db for the last 5 transactions and confirm they are within the last minute
+  - [ ] Query kafka-moniepoint-live withdrawal_transactions table
+    - select * from withdrawal_transactions order by created_on desc limit 5
+  - [ ] Compare timestamps between main db and kafka-moniepoint-live
+  - [ ] If kafka sink data is stale but main db is recent treat this as replication issue
+    - Escalate to infra-on-call on weekends or after work hours
+    - Escalate to @pymt_cards_cloud_engineers during work hours
+  - [ ] If main db data is also stale treat this as service issue and proceed as major incident
+  - [ ] Check moniepoint-withdrawal-service-transactions logs on Sherlock
+    - Verify most recent notification requests
+    - Verify most recent synchronization requests
+    - Check for errors
+  - [ ] If this is a major incident notify card-payment-technical-support and tech-ops with message
+    - Hello Team we are experiencing an issue with the withdrawal-service-transactions service withdrawal-transaction table is not being written to and this will affect notifications settlements and downstream processes investigations are ongoing updates will be shared as we work to resolve this issue
+  - [ ] Keep the team updated continuously as investigation continues until resolution
+
+escalation:
+  after_hours_or_weekend: "infra-on-call"
+  work_hours: "@pymt_cards_cloud_engineers"
+  major_incident_channels:
+    - "#card-payment-technical-support"
+    - "#tech-ops"
+  major_incident_message: "Hello Team we are experiencing an issue with the withdrawal-service-transactions service withdrawal-transaction table is not being written to and this will affect notifications settlements and downstream processes investigations are ongoing updates will be shared as we work to resolve this issue"
+
+slack_notification: true
+notify_channels:
+  - "#card-payment-technical-support"
+  - "#tech-ops"
+
+email_notification: true
+email_recipients:
+  - "oncall@example.com"
+  - "payments@example.com"
+
+resolution_time_sla: 60
+impact: "Stale withdrawal transaction replication impacts notifications settlements and operational reconciliation"

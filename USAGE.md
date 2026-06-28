@@ -1,11 +1,12 @@
 # Incident Wiki
 
-A simple, searchable wiki for managing incidents with YAML-based incident files. Integrates with Slack to instantly send incident information when alerts are triggered.
+A simple, searchable wiki for managing incidents with YAML-based incident files. It supports team-based folders, shorthand incident lookup, and Slack to instantly send incident information when alerts are triggered.
 
 ## 🎯 Features
 
 - **YAML-Based Incidents**: Define incidents with structured information
 - **Fast Search**: Search by incident name, ID, aliases, or description
+- **Shorthand Lookup**: Open incidents using the first few words of the incident name when the match is unique
 - **Slack Integration**: Automatically send incident details to Slack channels
 - **CLI Interface**: Command-line tools for searching and managing incidents
 - **Easy Escalation**: Predefined escalation paths and SLAs
@@ -15,9 +16,11 @@ A simple, searchable wiki for managing incidents with YAML-based incident files.
 
 ```
 mp-incidents-wiki/
-├── incidents/                          # Incident YAML files
-│   ├── example-database-connection-timeout.yaml
-│   └── example-payment-processing-failure.yaml
+├── merchant_settlement/
+│   ├── incidents/                      # Merchant settlement incident YAML files
+│   │   ├── example-database-connection-timeout.yaml
+│   │   └── pending-bo-withdrawals-no-batch-created-p2.yaml
+│   └── alerts/                         # Team-specific alert definitions or routing helpers
 ├── src/
 │   ├── incident_manager.py            # Core search and retrieval
 │   ├── slack_handler.py               # Slack integration
@@ -44,7 +47,7 @@ cp .env.example .env
 
 ### 3. Create Your First Incident
 
-Create a new YAML file in the `incidents/` directory. Example structure:
+Create a new YAML file in a team folder such as `merchant_settlement/incidents/`. Example structure:
 
 ```yaml
 ---
@@ -105,6 +108,7 @@ python src/cli.py search "payment"
 Show full incident details:
 ```bash
 python src/cli.py show db-connection-timeout
+python src/cli.py show pending-bo-settlements
 ```
 
 Get incident runbook:
@@ -132,7 +136,7 @@ from src.incident_manager import IncidentManager
 from src.slack_handler import SlackIncidentHandler
 
 # Search for incidents
-manager = IncidentManager("incidents")
+manager = IncidentManager()
 results = manager.search("database")
 for incident in results:
     print(manager.get_incident_summary(incident))
@@ -210,6 +214,7 @@ if alert_type == "database_timeout":
 ## 📝 Best Practices
 
 - **ID Convention**: Use lowercase, hyphenated IDs (e.g., `db-connection-timeout`)
+- **Shorthand Lookup**: Make the first few words of the incident name distinctive enough to identify the incident uniquely
 - **Aliases**: Add common names, error messages, and abbreviations
 - **Runbooks**: Keep steps concise and actionable
 - **SLA**: Set realistic resolution times based on incident severity
@@ -229,16 +234,17 @@ if alert_type == "database_timeout":
 Two example incidents are included:
 - `example-database-connection-timeout.yaml` - Database connection pool issue
 - `example-payment-processing-failure.yaml` - Payment processor failure
+- `pending-bo-withdrawals-no-batch-created-p2.yaml` - Merchant settlement withdrawal batch issue
 
 Use these as templates when creating new incidents.
 
 ## 🤝 Contributing
 
 To add a new incident:
-1. Create a YAML file in `incidents/` directory
+1. Create a YAML file in a team folder such as `merchant_settlement/incidents/`
 2. Name it after the incident ID with `.yaml` extension
 3. Follow the schema above
-4. Test with: `python src/cli.py search <your-incident-name>`
+4. Test with: `python src/cli.py search <your-incident-name>` or `python src/cli.py show <unique-prefix>`
 
 ## 📄 License
 

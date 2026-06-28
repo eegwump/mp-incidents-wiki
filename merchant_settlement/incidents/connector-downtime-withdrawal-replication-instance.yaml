@@ -1,0 +1,75 @@
+---
+name: "Connector downtime- withdrawal replication instance"
+id: "connector-downtime-withdrawal-replication-instance"
+priority: "P2"
+severity: "high"
+description: "Connector downtime on the withdrawal replication instance impacts settlement replication"
+aliases:
+  - "connector downtime withdrawal replication"
+  - "withdrawal replication connector down"
+  - "strimzi connector down"
+
+triggers:
+  - "Connector downtime- withdrawal replication instance"
+  - "Strimzi Kafka connector status is down"
+
+monitoring_dashboard_url: "https://showroom-private.moniepoint.com/d/ef9jiktizop34e/strimzi-kafka-connect?orgId=1&from=now-1h&to=now&timezone=browser&var-DS_PROMETHEUS=ff9h6mcq56v40f&var-kubernetes_namespace=settlement-replication&var-strimzi_connect_cluster_name=kafka&refresh=5s&viewPanel=panel-34"
+monitoring_scope:
+  - "kafka-aptent-server namespace"
+  - "withdrawal-transactions-replication namespace"
+
+troubleshooting:
+  - step: "Confirm connector downtime from Strimzi dashboard"
+    url: "https://showroom-private.moniepoint.com/d/ef9jiktizop34e/strimzi-kafka-connect?orgId=1&from=now-1h&to=now&timezone=browser&var-DS_PROMETHEUS=ff9h6mcq56v40f&var-kubernetes_namespace=settlement-replication&var-strimzi_connect_cluster_name=kafka&refresh=5s&viewPanel=panel-34"
+    description: "Check kafka-aptent-server and withdrawal-transactions-replication namespaces for down connectors"
+  - step: "Escalate based on support window"
+    description: "Escalate to infra-on-call on weekends or after work hours and escalate to @pymt_cards_cloud_engineers during work hours"
+  - step: "Wait for solution merge review"
+    description: "Track merge review and deployment updates until a fix is released"
+  - step: "Verify connectors are back up"
+    description: "Recheck Strimzi dashboard and confirm connector status is UP"
+  - step: "Validate replicated data"
+    description: "Check settlement_batches settlement_entries and transaction_records on kafka-moniepoint-live db"
+
+runbook: |
+  - [ ] Confirm the incident is Connector downtime- withdrawal replication instance
+  - [ ] Check the Strimzi Kafka monitoring dashboard on Showroom
+    - https://showroom-private.moniepoint.com/d/ef9jiktizop34e/strimzi-kafka-connect?orgId=1&from=now-1h&to=now&timezone=browser&var-DS_PROMETHEUS=ff9h6mcq56v40f&var-kubernetes_namespace=settlement-replication&var-strimzi_connect_cluster_name=kafka&refresh=5s&viewPanel=panel-34
+  - [ ] Confirm connector health for kafka-aptent-server and withdrawal-transactions-replication namespaces
+  - [ ] If connectors are down, escalate based on support window
+    - Escalate to infra-on-call on weekends or after work hours
+    - Escalate to @pymt_cards_cloud_engineers during work hours
+  - [ ] Wait for solution merge review
+  - [ ] Confirm connectors are back up by checking Strimzi Kafka monitoring dashboard again
+  - [ ] Validate replication data in kafka-moniepoint-live database by checking these tables
+    - settlement_batches
+    - settlement_entries
+    - transaction_records
+  - [ ] Leave an update when the issue is resolved
+
+escalation:
+  after_hours_or_weekend: "infra-on-call"
+  work_hours: "@pymt_cards_cloud_engineers"
+  escalation_message_template: "Connector downtime observed on withdrawal replication instance, please investigate and restore connector uptime"
+
+verification:
+  dashboard_check: "Confirm connector status is UP on Strimzi Kafka monitoring"
+  database_checks:
+    - "settlement_batches"
+    - "settlement_entries"
+    - "transaction_records"
+
+resolution_update_template: "Connector downtime issue resolved, connectors are back up and replication checks passed"
+
+slack_notification: true
+notify_channels:
+  - "#card-payment-technical-support"
+  - "#tech-ops"
+
+email_notification: true
+email_recipients:
+  - "oncall@example.com"
+  - "payments@example.com"
+
+resolution_time_sla: 60
+impact: "Connector downtime delays settlement replication and can cause stale settlement data"

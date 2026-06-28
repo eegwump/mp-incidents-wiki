@@ -29,9 +29,9 @@ Usage: python src/cli.py <command> [args]
 Commands:
   list                          List all incidents
   search <query>                Search incidents by name/ID/alias
-  show <incident-id>            Show full incident details
-  runbook <incident-id>         Show incident runbook
-  slack <incident-id> [channel] Send incident to Slack
+    show <incident-id>            Show full incident details or shorthand prefix
+    runbook <incident-id>         Show incident runbook or shorthand prefix
+    slack <incident-id> [channel] Send incident to Slack
   slack-search <query>          Search and send results to Slack
   email <incident-id> [recipients] Send incident via email
   email-search <query>          Search and send results via email
@@ -40,6 +40,7 @@ Examples:
   python src/cli.py list
   python src/cli.py search database
   python src/cli.py show db-connection-timeout
+    python src/cli.py show pending-bo-settlements
   python src/cli.py runbook payment-processing-failure
   python src/cli.py slack db-connection-timeout
   python src/cli.py email db-connection-timeout
@@ -87,7 +88,7 @@ def main():
             print("❌ Missing incident ID")
             return
         incident_id = sys.argv[2]
-        incident = manager.get_incident(incident_id)
+        incident = manager.resolve_incident(incident_id)
         
         if not incident:
             print(f"❌ Incident '{incident_id}' not found")
@@ -100,7 +101,7 @@ def main():
             print("❌ Missing incident ID")
             return
         incident_id = sys.argv[2]
-        incident = manager.get_incident(incident_id)
+        incident = manager.resolve_incident(incident_id)
         
         if not incident:
             print(f"❌ Incident '{incident_id}' not found")
@@ -122,7 +123,11 @@ def main():
         
         try:
             handler = SlackIncidentHandler()
-            handler.send_incident_alert(incident_id, channel)
+            resolved_incident = handler.manager.resolve_incident(incident_id)
+            if not resolved_incident:
+                print(f"❌ Incident '{incident_id}' not found")
+                return
+            handler.send_incident_alert(resolved_incident.get("id"), channel)
         except ValueError as e:
             print(f"❌ {e}")
     
@@ -161,7 +166,11 @@ def main():
         
         try:
             handler = EmailHandler()
-            handler.send_incident_alert(incident_id, recipients)
+            resolved_incident = handler.manager.resolve_incident(incident_id)
+            if not resolved_incident:
+                print(f"❌ Incident '{incident_id}' not found")
+                return
+            handler.send_incident_alert(resolved_incident.get("id"), recipients)
         except ValueError as e:
             print(f"❌ {e}")
             return

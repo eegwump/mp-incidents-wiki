@@ -1,0 +1,27 @@
+---
+name: "DNS Status on Ignore Alert"
+id: "dns-status-on-ignore-alert"
+category: "merchant_settlement"
+severity: "medium"
+description: "Alert for transactions with DNS status on IGNORE for a specific business scheme"
+trigger_message: "There are transactions from a business scheme with DNS status on IGNORE. Please check and verify the DNS status and business scheme"
+
+business_scheme_code: "MEGA_STAR_15%_TIERED_CASHBACK_50%_BRM_PROMO_WITHDRAWAL_BS_NODNS_12PERC_CASHBACK_FIXED"
+
+runbook: |
+  - [ ] Confirm the alert message mentions DNS status on IGNORE for a business scheme
+  - [ ] Run this query
+    - select business_scheme_code, count(*) from withdrawal_transactions where distribution_network_settlement_status = 'IGNORE' group by business_scheme_code
+  - [ ] Compare the highest count business_scheme_code with the alert business scheme code
+  - [ ] If the business_scheme_code with the highest count matches the business_scheme_code on the alert, then inform John and Chidera 
+  - [ ] Send this message
+    - We're having ignore status on the DNS settlement for transactions with the business scheme code <business_scheme_code>
+
+notification:
+  notify_people:
+    - John
+    - Chidera
+  message: "We're having ignore status on the DNS settlement for transactions with the business scheme code <business_scheme_code>"
+
+references:
+  query: "select business_scheme_code, count(*) from withdrawal_transactions where distribution_network_settlement_status = 'IGNORE' group by business_scheme_code"

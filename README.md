@@ -1,12 +1,13 @@
 # Merchant Settlement Incidents Wiki
 
-A searchable wiki for managing merchant settlement incidents with YAML-based incident files and Slack integration.
+A searchable wiki for managing merchant settlement incidents with YAML-based incident files, team folders, and Slack integration.
 
 ## 🎯 Overview
 
 This is a centralized incident management system that allows you to:
 - **Define incidents** as YAML files with structured troubleshooting steps
 - **Search quickly** by incident name, ID, or aliases
+- **Open incidents by shorthand** using the first few words of the incident name when the match is unique
 - **Get instant Slack alerts** when incidents are triggered
 - **Follow runbooks** for consistent resolution procedures
 - **Track SLAs** to ensure timely incident response
@@ -28,7 +29,8 @@ This is a centralized incident management system that allows you to:
    ```bash
    python src/cli.py list                    # Show all incidents
    python src/cli.py search database         # Search by keyword
-   python src/cli.py show db-connection-timeout  # Show full details
+    python src/cli.py show db-connection-timeout  # Show full details
+    python src/cli.py show pending-bo-settlements  # Show by shorthand prefix
    ```
 
 4. **Send to Slack**:
@@ -39,14 +41,16 @@ This is a centralized incident management system that allows you to:
 ## 📁 Project Structure
 
 ```
-incidents/                           # Incident YAML files
-├── example-database-connection-timeout.yaml
-└── example-payment-processing-failure.yaml
+merchant_settlement/
+├── incidents/                        # Merchant settlement incident YAML files
+│   ├── example-database-connection-timeout.yaml
+│   └── pending-bo-withdrawals-no-batch-created-p2.yaml
+└── alerts/                           # Team-specific alert definitions or routing helpers
 
 src/
-├── incident_manager.py             # Search and retrieval
-├── slack_handler.py                # Slack integration
-└── cli.py                          # Command-line interface
+├── incident_manager.py               # Search and retrieval
+├── slack_handler.py                  # Slack integration
+└── cli.py                            # Command-line interface
 ```
 
 ## 📖 Full Documentation
@@ -62,7 +66,7 @@ See [USAGE.md](USAGE.md) for complete documentation on:
 ## 🔑 Key Features
 
 ✅ **YAML-Based** - Human-readable incident definitions  
-✅ **Searchable** - Find incidents by name, ID, or aliases  
+✅ **Searchable** - Find incidents by name, ID, aliases, or a unique shorthand prefix  
 ✅ **Email Alerts** - Send formatted incident details via email (no Slack required!)  
 ✅ **Slack Integration** - Optional: send incident details directly to Slack  
 ✅ **Runbooks** - Step-by-step troubleshooting procedures  

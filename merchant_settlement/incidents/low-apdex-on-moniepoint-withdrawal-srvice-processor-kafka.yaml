@@ -1,0 +1,57 @@
+---
+name: "Low apdex on moniepoint withdrawal srvice processor kafka"
+id: "low-apdex-on-moniepoint-withdrawal-srvice-processor-kafka"
+priority: "P2"
+severity: "high"
+description: "Apdex degrades when active pods for moniepoint-withdrawal-service-processor-kafka drop below expected count"
+aliases:
+  - "low apdex withdrawal processor kafka"
+  - "low apdex moniepoint withdrawal service processor kafka"
+  - "withdrawal processor kafka low apdex"
+
+triggers:
+  - "low-apdex-on-moniepoint-withdrawal-srvice-processor-kafka"
+  - "Active pods for moniepoint-withdrawal-service-processor-kafka are below threshold"
+
+workload_name: "moniepoint-withdrawal-service-processor-kafka"
+expected_pod_count: 10
+
+troubleshooting:
+  - step: "Go to GCP Kubernetes workloads"
+    description: "In GCP open Kubernetes Engine then Workloads"
+  - step: "Search workload"
+    description: "Search for moniepoint-withdrawal-service-processor-kafka"
+  - step: "Confirm active pod count"
+    description: "Check number of active pods and confirm it is below 10"
+  - step: "Restart all pods"
+    description: "Use the rolling updates button to restart all pods"
+  - step: "Verify recovery"
+    description: "Confirm pods return to 10 and apdex is back to normal"
+
+runbook: |
+  - [ ] Confirm the incident is low-apdex-on-moniepoint-withdrawal-srvice-processor-kafka
+  - [ ] Go to GCP
+  - [ ] Open Kubernetes Engine and then Workloads
+  - [ ] Search for moniepoint-withdrawal-service-processor-kafka
+  - [ ] Check number of active pods
+    - Expected pods: 10
+  - [ ] If active pods are below 10 use the rolling updates button to restart all pods
+  - [ ] Confirm all pods are back to 10
+  - [ ] Confirm apdex has recovered and the incident is resolved
+
+escalation:
+  level_1: "If pods do not recover after rolling update escalate to platform on-call"
+  level_2: "If apdex remains low after pods recover escalate to service owners"
+
+slack_notification: true
+notify_channels:
+  - "#card-payment-technical-support"
+  - "#tech-ops"
+
+email_notification: true
+email_recipients:
+  - "oncall@example.com"
+  - "payments@example.com"
+
+resolution_time_sla: 30
+impact: "Low apdex on withdrawal processor kafka can delay transaction processing and impact customer experience"
