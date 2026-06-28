@@ -1,0 +1,68 @@
+---
+name: "Pending BO Settlement On Withdrawals With No Settlement Batch Created - P2"
+id: "pending-bo-withdrawals-no-batch-created-p2"
+priority: "P2"
+severity: "high"
+description: "Withdrawal transactions show pending settlement and no settlement batch is created"
+aliases:
+  - "pending settlement withdrawals"
+  - "withdrawal no batch"
+  - "settlement batch missing"
+
+triggers:
+  - "PagerDuty incident for pending BO settlement on withdrawals"
+  - "Monitoring shows withdrawal transactions with pending settlement status and no settlement batch created"
+
+troubleshooting:
+  - step: "Acknowledge incident immediately"
+    description: "Acknowledge the PagerDuty incident"
+  - step: "Open the Watchtower settlements dashboard"
+    url: "https://watchtower-private.teamapt.com/d/FjX6bAhVzSettlements/moniepoint-payment-merchant-settlements-technical-support-dashboard?orgId=1&refresh=5s&from=now-30m&to=now"
+    description: "Go to Business settlement section and check the relevant panels"
+  - step: "Compare panels for replication issues"
+    description: "Check '2 mins old unsettled withdrawal' and 'withdrawal txn with no settlement created' panels for discrepancies"
+  - step: "Verify a transaction exists on main settlement table"
+    description: "Take a transaction from the high count panel and check settlement_batches on mpt-withdrawal-settlementdb-live to confirm exists"
+  - step: "If transaction exists on main DB escalate replication issue to infra"
+    description: "Escalate replication issue to infra for kafka sink db and withdrawal settlement db"
+  - step: "If both panels show low count or are down notify support channels"
+    description: "If panels show no activity then settlement batches are not being created, proceed as major incident"
+
+escalation:
+    - https://showroom-private.moniepoint.com/d/ef9jiktizop34e/strimzi-kafka-connect?orgId=1&from=now-1h&to=now&timezone=browser&var-DS_PROMETHEUS=ff9h6mcq56v40f&var-kubernetes_namespace=monitoring-kafka-withdrawal&var-strimzi_connect_cluster_name=kafka-withdrawal-connect&refresh=5s&viewPanel=panel-34
+  level_1: To infra: "Hello infra on call kindly check replication on kafka sink db for settlement_batches_withdrawal table on withdrawal settlement db 10 134 96 133."
+  level_2: To Tech-Ops and Card Payment Technical Support as major incident
+
+runbook: |
+  - [ ] Acknowledge the PagerDuty incident immediately
+  - [ ] Open the Watchtower settlements dashboard
+    - https://watchtower-private.teamapt.com/d/FjX6bAhVzSettlements/moniepoint-payment-merchant-settlements-technical-support-dashboard?orgId=1&refresh=5s&from=now-30m&to=now
+  - [ ] In Business settlement section check these panels
+    - [ ] 2 mins old unsettled withdrawal
+    - [ ] withdrawal txn with no settlement created
+  - [ ] Compare counts on both panels
+    - If 2 mins old unsettled withdrawal has low count and the withdrawal txn with no settlement created panel has high count then this is a replication issue
+    - If both panels are down or show no data then settlement batches are NOT being created, proceed as major incident
+  - [ ] For replication issue take one transaction from high count panel and query settlement_batches table on mpt-withdrawal-settlementdb-live to confirm exists
+  - [ ] If transaction exists on main DB escalate to infra with message
+    - Hello infra on call kindly check replication on kafka sink db for settlement_batches_withdrawal table on withdrawal settlement db 10 134 96 133
+  - [ ] If both panels down or no data then settlement batches are not being created. confirm first by checking the main settlement_batches table on mpt-withdrawal-settlementdb-live for the latest transaction.
+    - Notify card-payment-technical-support and tech-ops channels
+    - Message: Hello Team, we are experiencing an issue with Pending BO settlement on withdrawals with no settlement batch created. We have established that settlement batches are not being created, investigations are ongoing to resolve this issue. 
+  - [ ] Check Kafka Connect and connector metrics
+    - https://showroom-private.moniepoint.com/d/ef9jiktizop34e/strimzi-kafka-connect?orgId=1&from=now-1h&to=now&timezone=browser&var-DS_PROMETHEUS=ff9h6mcq56v40f&var-kubernetes_namespace=monitoring-kafka-withdrawal&var-strimzi_connect_cluster_name=kafka-withdrawal-connect&refresh=5s&viewPanel=panel-34
+  - [ ] If no topic lag then ask infra to investigate settlement service for batch creation failures
+  - [ ] Update incident timeline with actions and stakeholder updates
+
+slack_notification: true
+notify_channels:
+  - "#card-payment-technical-support"
+  - "#tech-ops"
+
+email_notification: true
+email_recipients: #Work in progress
+  - "oncall@example.com"
+  - "payments@example.com"
+
+resolution_time_sla: 60 # minutes
+impact: "Failed settlement batches for withdrawals leads to financial reconciliation issues and customer impact"
