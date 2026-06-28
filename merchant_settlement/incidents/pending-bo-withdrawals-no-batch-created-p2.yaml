@@ -29,9 +29,9 @@ troubleshooting:
     description: "If panels show no activity then settlement batches are not being created, proceed as major incident"
 
 escalation:
-    - https://showroom-private.moniepoint.com/d/ef9jiktizop34e/strimzi-kafka-connect?orgId=1&from=now-1h&to=now&timezone=browser&var-DS_PROMETHEUS=ff9h6mcq56v40f&var-kubernetes_namespace=monitoring-kafka-withdrawal&var-strimzi_connect_cluster_name=kafka-withdrawal-connect&refresh=5s&viewPanel=panel-34
-  level_1: To infra: "Hello infra on call kindly check replication on kafka sink db for settlement_batches_withdrawal table on withdrawal settlement db 10 134 96 133."
-  level_2: To Tech-Ops and Card Payment Technical Support as major incident
+  dashboard_url: "https://showroom-private.moniepoint.com/d/ef9jiktizop34e/strimzi-kafka-connect?orgId=1&from=now-1h&to=now&timezone=browser&var-DS_PROMETHEUS=ff9h6mcq56v40f&var-kubernetes_namespace=monitoring-kafka-withdrawal&var-strimzi_connect_cluster_name=kafka-withdrawal-connect&refresh=5s&viewPanel=panel-34"
+  level_1: "To infra: Hello infra on call kindly check replication on kafka sink db for settlement_batches_withdrawal table on withdrawal settlement db 10 134 96 133"
+  level_2: "To Tech-Ops and Card Payment Technical Support as major incident"
 
 runbook: |
   - [ ] Acknowledge the PagerDuty incident immediately

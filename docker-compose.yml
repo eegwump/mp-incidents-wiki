@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  incident-wiki:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: incident-wiki
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - DEBUG=False
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+      - SLACK_SIGNING_SECRET=${SLACK_SIGNING_SECRET}
+      - INCIDENTS_CHANNEL=${INCIDENTS_CHANNEL:-incidents}
+    volumes:
+      - ./incidents:/app/incidents
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
