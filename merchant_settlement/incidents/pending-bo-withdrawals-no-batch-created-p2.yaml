@@ -27,6 +27,8 @@ troubleshooting:
     description: "Escalate replication issue to infra for kafka sink db and withdrawal settlement db"
   - step: "If both panels show low count or are down notify support channels"
     description: "If panels show no activity then settlement batches are not being created, proceed as major incident"
+  - step: "Check Sherlock logs for the settlement service"
+    description: "If this is a service issue and both panels are down or have low data, check Sherlock logs for the service moniepoint-settlement-service-withdrawals-hp for keywords such as error, exception, timeout, unable to connect, java, springboot, NullPointerException, ClassNotFoundException, and BeanCreationException"
 
 escalation:
   dashboard_url: "https://showroom-private.moniepoint.com/d/ef9jiktizop34e/strimzi-kafka-connect?orgId=1&from=now-1h&to=now&timezone=browser&var-DS_PROMETHEUS=ff9h6mcq56v40f&var-kubernetes_namespace=monitoring-kafka-withdrawal&var-strimzi_connect_cluster_name=kafka-withdrawal-connect&refresh=5s&viewPanel=panel-34"
@@ -49,6 +51,8 @@ runbook: |
   - [ ] If both panels down or no data then settlement batches are not being created. confirm first by checking the main settlement_batches table on mpt-withdrawal-settlementdb-live for the latest transaction.
     - Notify card-payment-technical-support and tech-ops channels
     - Message: Hello Team, we are experiencing an issue with Pending BO settlement on withdrawals with no settlement batch created. We have established that settlement batches are not being created, investigations are ongoing to resolve this issue. 
+  - [ ] If this is a service issue and both panels are down or have low data, check Sherlock logs for the service moniepoint-settlement-service-withdrawals-hp
+    - Search for keywords such as error, exception, timeout, unable to connect, java, springboot, NullPointerException, ClassNotFoundException, and BeanCreationException
   - [ ] Check Kafka Connect and connector metrics
     - https://showroom-private.moniepoint.com/d/ef9jiktizop34e/strimzi-kafka-connect?orgId=1&from=now-1h&to=now&timezone=browser&var-DS_PROMETHEUS=ff9h6mcq56v40f&var-kubernetes_namespace=monitoring-kafka-withdrawal&var-strimzi_connect_cluster_name=kafka-withdrawal-connect&refresh=5s&viewPanel=panel-34
   - [ ] If no topic lag then ask infra to investigate settlement service for batch creation failures
